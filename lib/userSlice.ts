@@ -45,6 +45,15 @@ export const signinUser = createAsyncThunk(
   }
 )
 
+export const signoutUser = createAsyncThunk('user/signoutUser', async (_, { dispatch }) => {
+  // 清空 redux user 狀態
+  dispatch(clearUser())
+  // 清除 localStorage token
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('user_token')
+  }
+})
+
 const userSlice = createSlice({
   name: 'user',
   initialState,

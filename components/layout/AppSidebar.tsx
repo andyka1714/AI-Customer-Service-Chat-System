@@ -1,4 +1,7 @@
-import { Monitor, MessageSquareMore, LogOut } from "lucide-react"
+import { Monitor, MessageSquareMore, LogOut, ChevronUp } from "lucide-react"
+import { useSelector, useDispatch } from 'react-redux'
+import { useRouter } from 'next/navigation'
+import { signoutUser } from '@/lib/userSlice'
 
 import {
   Sidebar,
@@ -11,6 +14,13 @@ import {
   SidebarMenuItem,
   SidebarFooter,
 } from "@/components/ui/sidebar"
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // Menu items.
 const items = [
@@ -26,8 +36,18 @@ const items = [
   },
 ]
 
-
 export function AppSidebar() {
+  // 取得 redux user name，型別斷言 state 為 RootState
+  const userName = useSelector((state: any) => (state.user?.user?.name ? state.user.user.name : '使用者'))
+  const dispatch = useDispatch()
+  const router = useRouter()
+
+  // 登出處理
+  const handleLogout = async () => {
+    await dispatch(signoutUser() as any)
+    router.replace('/signin')
+  }
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -50,10 +70,28 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenuButton>
-          <LogOut />
-          <span>登出</span>
-        </SidebarMenuButton>
+        <SidebarMenu className="w-full">
+          <SidebarMenuItem className="w-full">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton className="w-full">
+                  {userName}
+                  <ChevronUp className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="top"
+                align="start"
+                className="w-60"
+              >
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut />
+                  <span>登出</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   )

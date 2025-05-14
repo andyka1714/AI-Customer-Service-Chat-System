@@ -12,8 +12,8 @@ export interface Account {
 
 export const accounts: Account[] = [
   { email: 'user1@acme.com', password: '123456', role: 'user', name: '用戶一' },
-  { email: 'user2@acme.com', password: '654321', role: 'user', name: '用戶二' },
-  { email: 'user3@acme.com', password: 'abc123', role: 'user', name: '用戶三' },
+  { email: 'user2@acme.com', password: '123456', role: 'user', name: '用戶二' },
+  { email: 'user3@acme.com', password: '123456', role: 'user', name: '用戶三' },
   { email: 'admin@acme.com', password: 'admin888', role: 'admin', name: '管理員' },
 ]
 
