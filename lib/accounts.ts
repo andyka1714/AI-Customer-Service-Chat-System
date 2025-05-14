@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto'
+
 // 帳戶管理（可用於登入驗證）
 export type UserRole = 'user' | 'admin'
 
@@ -16,12 +18,14 @@ export const accounts: Account[] = [
 ]
 
 export function checkAccount(email: string, password: string) {
-  // 回傳不包含密碼的 user data
+  // 回傳不包含密碼的 user data，並加上 mock token
   const found = accounts.find(
     (acc) => acc.email === email && acc.password === password
   )
   if (!found) return null
+  // 產生 mock token
+  const token = randomUUID()
   // 移除密碼欄位
   const { password: _pw, ...userData } = found
-  return userData
+  return { ...userData, token }
 }

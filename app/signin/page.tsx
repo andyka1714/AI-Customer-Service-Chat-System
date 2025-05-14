@@ -5,13 +5,18 @@ import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { validateLogin } from "@/validators/ui/signin"
+import { useAppDispatch } from '@/lib/store'
+import { signinUser, setUser } from '@/lib/userSlice'
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/lib/store'
 
 export default function SignInPage() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
+  const userState = useSelector((state: RootState) => state.user as any)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<{ email?: string; password?: string; api?: string }>({})
 
   // 處理登入送出
   const handleSubmit = (e: React.FormEvent) => {
@@ -19,15 +24,15 @@ export default function SignInPage() {
     const validation = validateLogin({ email, password })
     setErrors(validation)
     if (validation.email || validation.password) {
-      setLoading(false)
       return
     }
-    setLoading(true)
-    // 模擬登入流程
-    setTimeout(() => {
-      setLoading(false)
-      router.push("/chat")
-    }, 1000)
+    // 監聽 redux action 完成後存 token
+    dispatch(signinUser({ email, password }))
+      .unwrap()
+      .then((user: any) => {
+        router.push('/chat')
+      })
+      .catch(() => {})
   }
 
   return (
@@ -68,10 +73,11 @@ export default function SignInPage() {
         <Button
           type="submit"
           className="w-full mb-4"
-          disabled={loading}
+          disabled={userState.loading}
         >
-          {loading ? "登入中..." : "登入"}
+          {userState.loading ? "登入中..." : "登入"}
         </Button>
+        {(userState.errors.api || errors.api) && <p className="text-xs text-red-500 mt-1">{userState.errors.api || errors.api}</p>}
       </form>
     </div>
   )
