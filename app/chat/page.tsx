@@ -57,13 +57,13 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <Card className="w-full max-w-xl h-[70vh] flex flex-col justify-between shadow-lg">
-        <CardContent className="flex-1 overflow-y-auto px-0 py-4 space-y-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted">
+      <Card className="p-0 w-full max-w-xl h-[70vh] flex flex-col justify-between shadow-2xl border-none bg-white/80 backdrop-blur-md overflow-hidden">
+        <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground select-none">
-              <span className="font-semibold text-lg">開始對話吧！</span>
-              <span className="text-sm mt-2">請輸入訊息並送出</span>
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground select-none pt-24 m-0">
+              <span className="font-bold text-2xl mb-1">Hello there!</span>
+              <span className="text-base">How can I help you today?</span>
             </div>
           )}
           {messages.map((msg) => (
@@ -72,11 +72,11 @@ export default function ChatPage() {
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`rounded-xl px-4 py-2 max-w-[70%] break-words text-base shadow-sm ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-accent text-accent-foreground'
-                }`}
+                className={`relative rounded-2xl px-4 py-2 max-w-[75%] break-words text-base shadow-md transition-all
+                  ${msg.role === 'user'
+                    ? 'bg-primary text-primary-foreground rounded-br-md'
+                    : 'bg-muted text-foreground rounded-bl-md border border-border'}
+                `}
               >
                 {msg.content}
               </div>
@@ -84,7 +84,7 @@ export default function ChatPage() {
           ))}
           {isReplying && (
             <div className="flex justify-start">
-              <div className="rounded-xl px-4 py-2 max-w-[70%] bg-accent text-accent-foreground animate-pulse">
+              <div className="relative rounded-2xl px-4 py-2 max-w-[75%] bg-muted text-foreground animate-pulse border border-border rounded-bl-md">
                 AI 正在輸入...
               </div>
             </div>
@@ -92,23 +92,28 @@ export default function ChatPage() {
           <div ref={messagesEndRef} />
         </CardContent>
         <form
-          className="flex items-center gap-2 border-t px-6 py-4 bg-card"
+          className="flex items-center gap-2 border-t px-6 py-4 bg-white/90 backdrop-blur-md"
           onSubmit={(e) => {
             e.preventDefault()
             handleSend()
           }}
         >
           <Input
-            className="flex-1"
-            placeholder="請輸入訊息..."
+            className="flex-1 bg-transparent border-none focus:ring-0 focus-visible:ring-0 shadow-none text-base placeholder:text-muted-foreground"
+            placeholder="Send a message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isReplying}
             autoFocus
           />
-          <Button type="submit" disabled={isReplying || !input.trim()}>
-            發送
+          <Button
+            type="submit"
+            disabled={isReplying || !input.trim()}
+            className="rounded-full px-3 py-2 h-10 w-10 flex items-center justify-center bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-all"
+            aria-label="發送"
+          >
+            <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path fill="currentColor" d="M2.5 17.5l15-7.5-15-7.5v6.25l10 1.25-10 1.25v6.25z"/></svg>
           </Button>
         </form>
       </Card>
