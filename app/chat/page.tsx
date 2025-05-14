@@ -57,8 +57,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-background to-muted">
-      <Card className="p-0 w-full max-w-xl h-[70vh] flex flex-col justify-between shadow-2xl border-none bg-white/80 backdrop-blur-md overflow-hidden">
+    <div className="fixed inset-0 flex items-center justify-center min-h-screen">
+      <Card
+        className="p-0 w-full max-w-[600px] h-full flex flex-col justify-between border-none bg-white/80 backdrop-blur-md overflow-hidden rounded-none shadow-none"
+      >
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground select-none pt-24 m-0">
@@ -75,7 +77,7 @@ export default function ChatPage() {
                 className={`relative rounded-2xl px-4 py-2 max-w-[75%] break-words text-base shadow-md transition-all
                   ${msg.role === 'user'
                     ? 'bg-primary text-primary-foreground rounded-br-md'
-                    : 'bg-muted text-foreground rounded-bl-md border border-border'}
+                    : 'text-foreground rounded-bl-md border border-border'}
                 `}
               >
                 {msg.content}
@@ -84,7 +86,7 @@ export default function ChatPage() {
           ))}
           {isReplying && (
             <div className="flex justify-start">
-              <div className="relative rounded-2xl px-4 py-2 max-w-[75%] bg-muted text-foreground animate-pulse border border-border rounded-bl-md">
+              <div className="relative rounded-2xl px-4 py-2 max-w-[75%] text-foreground animate-pulse border border-border rounded-bl-md">
                 AI 正在輸入...
               </div>
             </div>
@@ -92,7 +94,7 @@ export default function ChatPage() {
           <div ref={messagesEndRef} />
         </CardContent>
         <form
-          className="flex items-center gap-2 border-t px-6 py-4 bg-white/90 backdrop-blur-md"
+          className="flex items-center gap-2 px-6 py-4 bg-white/90 backdrop-blur-md border border-border rounded-xl m-4"
           onSubmit={(e) => {
             e.preventDefault()
             handleSend()
