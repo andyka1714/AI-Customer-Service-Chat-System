@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { Header } from "@/components/layout/Header"
 
@@ -18,7 +18,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className='w-full'>
+      <main className='w-full flex flex-col h-screen overflow-hidden'>
         <Header />
         {children}
       </main>
