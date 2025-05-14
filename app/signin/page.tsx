@@ -4,16 +4,24 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { validateLogin } from "@/validators/ui/signin"
 
 export default function SignInPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
   // 處理登入送出
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const validation = validateLogin({ email, password })
+    setErrors(validation)
+    if (validation.email || validation.password) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     // 模擬登入流程
     setTimeout(() => {
@@ -42,6 +50,7 @@ export default function SignInPage() {
             required
             className="mb-2"
           />
+          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
         </div>
         <div className="w-full mb-6">
           <label className="block text-xs mb-1 text-muted-foreground" htmlFor="password">密碼</label>
@@ -54,6 +63,7 @@ export default function SignInPage() {
             onChange={e => setPassword(e.target.value)}
             required
           />
+          {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password}</p>}
         </div>
         <Button
           type="submit"
