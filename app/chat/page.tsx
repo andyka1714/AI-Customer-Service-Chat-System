@@ -64,8 +64,8 @@ export default function ChatPage() {
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground select-none pt-24 m-0">
-              <span className="font-bold text-2xl mb-1">Hello there!</span>
-              <span className="text-base">How can I help you today?</span>
+              <span className="font-bold text-2xl mb-1">開始對話吧！</span>
+              <span className="text-base">請輸入訊息並送出</span>
             </div>
           )}
           {messages.map((msg) => (
@@ -107,7 +107,7 @@ export default function ChatPage() {
         >
           <Input
             className="flex-1 bg-transparent border-none focus:ring-0 focus-visible:ring-0 shadow-none text-base placeholder:text-muted-foreground"
-            placeholder="Send a message..."
+            placeholder="請輸入訊息..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
