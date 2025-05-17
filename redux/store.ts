@@ -1,3 +1,4 @@
+// redux/store.ts
 import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
 import userReducer from './userSlice'

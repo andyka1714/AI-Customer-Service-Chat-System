@@ -1,7 +1,7 @@
 import { Monitor, MessageSquareMore, LogOut, ChevronUp } from "lucide-react"
 import { useSelector, useDispatch } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { signoutUser } from '@/lib/userSlice'
+import { signoutUser } from '@/redux/userSlice'
 
 import {
   Sidebar,

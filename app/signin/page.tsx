@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { validateLogin } from "@/validators/ui/signin"
-import { useAppDispatch } from '@/lib/store'
-import { signinUser, setUser } from '@/lib/userSlice'
+import { useAppDispatch } from '@/redux/store'
+import { signinUser } from '@/redux/userSlice'
 import { useSelector } from 'react-redux'
-import type { RootState } from '@/lib/store'
+import type { RootState } from '@/redux/store'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -29,7 +29,7 @@ export default function SignInPage() {
     // 監聽 redux action 完成後存 token
     dispatch(signinUser({ email, password }))
       .unwrap()
-      .then((user: any) => {
+      .then(() => {
         router.push('/chat')
       })
       .catch(() => {})

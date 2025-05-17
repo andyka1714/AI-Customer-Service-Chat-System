@@ -1,3 +1,4 @@
+// redux/userSlice.ts
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface UserState {
