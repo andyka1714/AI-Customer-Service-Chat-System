@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/shadcn/input'
 import { Button } from '@/components/ui/shadcn/button'
 import { useSelector } from 'react-redux'
 import CustomScrollbar from '@/components/ui/CustomScrollbar'
-import { extractMatchedKeywords } from '@/lib/extractMatchedKeywords'
+import { extractMatchedKeywords } from '@/lib/keywords/extractMatchedKeywords'
 import type { ChatMessage } from '@/types/chat'
 import ChatMessages from '@/components/ui/ChatMessages'
 

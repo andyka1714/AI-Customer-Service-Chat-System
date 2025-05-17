@@ -5,6 +5,7 @@ import type { Session } from '@/types/sessions'
 import { supabase } from '@/lib/supabaseClient'
 import type { ChatMessage } from '@/types/chat'
 import ChatMessages from '@/components/ui/ChatMessages'
+import { extractMatchedKeywords } from '@/lib/keywords/extractMatchedKeywords'
 
 interface ChatMessageMonitorWindowProps {
   session: Session
@@ -61,6 +62,13 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // 計算本 session 所有訊息出現過的關鍵字
+  const matchedKeywords = Array.from(
+    new Set(
+      messages.flatMap(m => extractMatchedKeywords(m.content))
+    )
+  )
+
   return (
     <div className="border rounded-lg p-4 bg-white shadow h-[400px] flex flex-col">
       <div className="font-bold mb-2">{session.user?.name || session.id}</div>
@@ -69,7 +77,7 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
           <div className="text-gray-400 text-center">（無訊息）</div>
         ) : (
           <>
-            <ChatMessages messages={messages} />
+            <ChatMessages messages={messages} keywords={matchedKeywords} />
             <div ref={messagesEndRef} />
           </>
         )}

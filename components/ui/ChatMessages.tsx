@@ -2,13 +2,15 @@
 // 訊息列表元件，支援 user/assistant 樣式
 import React from 'react'
 import type { ChatMessage } from '@/types/chat'
+import { highlightKeywords } from '@/lib/keywords/highlightKeywords'
 
 interface ChatMessagesProps {
   messages: ChatMessage[]
   showAssistantStatus?: boolean // 是否顯示 assistant 狀態，預設 false
+  keywords?: string[] // 要 highlight 的關鍵字
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, showAssistantStatus = false }) => (
+const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, showAssistantStatus = false, keywords = [] }) => (
   <>
     {messages.map((msg) => (
       <div
@@ -23,7 +25,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, showAssistantStat
                 : 'text-foreground rounded-bl-md border border-border'}
             `}
           >
-            {msg.content}
+            {highlightKeywords(msg.content, keywords)}
           </div>
           {showAssistantStatus && msg.role === 'assistant' && (
             <span className="text-xs text-muted-foreground mt-1 ml-2">已回覆</span>
