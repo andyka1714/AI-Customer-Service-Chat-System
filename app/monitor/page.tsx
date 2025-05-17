@@ -42,22 +42,37 @@ const MonitorPage: React.FC = () => {
     dispatch(fetchActiveCount())
   }, [dispatch])
 
-  // 監聽 sessions 新增，及時刷新列表與活躍對話數
+  // 監聽 sessions 新增與 latest_message_sent_at 更新，及時刷新列表與活躍對話數
   useEffect(() => {
-    const channel = supabase
-      .channel('public:sessions')
+    // sessions 新增
+    const sessionInsertChannel = supabase
+      .channel('public:sessions-insert')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'sessions' },
         () => {
-          // 新增 session 時自動刷新
           dispatch(fetchSessions({ search, page, pageSize }))
           dispatch(fetchActiveCount())
         }
       )
       .subscribe()
+    // sessions 更新 latest_message_sent_at
+    const sessionUpdateChannel = supabase
+      .channel('public:sessions-update')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'sessions' },
+        (payload) => {
+          if (payload.new.latest_message_sent_at !== payload.old.latest_message_sent_at) {
+            dispatch(fetchSessions({ search, page, pageSize }))
+            dispatch(fetchActiveCount())
+          }
+        }
+      )
+      .subscribe()
     return () => {
-      supabase.removeChannel(channel)
+      supabase.removeChannel(sessionInsertChannel)
+      supabase.removeChannel(sessionUpdateChannel)
     }
   }, [dispatch, search, page, pageSize])
 
