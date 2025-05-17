@@ -222,7 +222,7 @@ export default function ChatPage() {
           {isReplying && (
             <div className="flex justify-start">
               <div className="relative rounded-2xl px-4 py-2 max-w-[75%] text-foreground animate-pulse border border-border rounded-bl-md">
-                AI 正在輸入...
+                正在輸入...
               </div>
             </div>
           )}
