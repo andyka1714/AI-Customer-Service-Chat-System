@@ -88,19 +88,11 @@ const MonitorPage: React.FC = () => {
       {/* 搜尋欄位 */}
       <SearchBar func={val => { setSearch(val); setPage(1); }} placeholder="搜尋用戶名稱或 Email..." />
       <CustomScrollbar className="flex-1 overflow-y-auto space-y-4">
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {[...Array(10)].map((_, i) => (
-              <Skeleton key={i} className=" w-full h-[400px] rounded-xl" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {sessions.map((session: Session) => (
-              <ChatMessageMonitorWindow key={session.id} session={session} />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {sessions.map((session: Session) => (
+            <ChatMessageMonitorWindow key={session.id} session={session} />
+          ))}
+        </div>
       </CustomScrollbar>
       <CustomPaginationProps page={page} total={total} pageSize={pageSize} setPage={setPage} />
     </div>
