@@ -30,7 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   return (
-    <div className={`w-full flex justify-end mb-4 ${className}`}>
+    <div className={`w-full flex justify-start mb-4 ${className}`}>
       <input
         type="text"
         value={search}
