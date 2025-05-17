@@ -1,6 +1,6 @@
 // lib/routes.ts
 // Sidebar 路由與標題、icon 設定（集中管理）
-import { MessageSquareMore, Monitor } from 'lucide-react'
+import { MessageSquareMore, ListChecks } from 'lucide-react'
 
 export interface SidebarRoute {
   title: string
@@ -11,15 +11,15 @@ export interface SidebarRoute {
 
 export const sidebarRoutes: SidebarRoute[] = [
   {
-    title: '聊天',
+    title: '智能客服',
     url: '/chat',
     icon: MessageSquareMore,
     roles: ['user', 'admin'],
   },
   {
-    title: '對話監控',
+    title: '對話管理',
     url: '/sessions',
-    icon: Monitor,
+    icon: ListChecks,
     roles: ['admin'],
   },
 ]

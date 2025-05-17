@@ -34,7 +34,7 @@ export default function SessionsPage() {
 
   return (
     <div className="flex flex-col items-stretch w-full h-full p-6">
-      <h1 className="text-2xl font-bold mb-6 self-center">客戶聊天管理列表</h1>
+      <h1 className="text-2xl font-bold mb-6 self-center">客戶對話管理列表</h1>
       {/* 搜尋欄位 */}
       <div className="w-full flex justify-end mb-4">
         <input
