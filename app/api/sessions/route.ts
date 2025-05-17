@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('sessions')
     .select('id, user_id, latest_message_sent_at, created_at, notes, users!inner(id, role, name, email)', { count: 'exact' })
-    .order('latest_message_sent_at', { ascending: false })
+    .order('latest_message_sent_at', { ascending: false, nullsFirst: false })
     .range(from, to)
   if (search) {
     // 正確針對 join 的 users table 做 or 模糊搜尋

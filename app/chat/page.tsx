@@ -109,7 +109,7 @@ export default function ChatPage() {
       }
     }
     // 更新 session 最後訊息時間
-    await supabase.from('sessions').update({ lastest_message_sended_at: new Date().toISOString() }).eq('id', sessionId)
+    await supabase.from('sessions').update({ latest_message_sent_at: new Date().toISOString() }).eq('id', sessionId)
     // 呼叫 OpenAI API 取得 AI 回覆
     try {
       // 取得目前 session 所有訊息，組成對話上下文
