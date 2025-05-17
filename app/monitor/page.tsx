@@ -10,6 +10,7 @@ import SearchBar from '@/components/ui/SearchBar'
 import CustomPaginationProps from '@/components/ui/CustomPaginationProps'
 import type { Session } from '@/types/sessions'
 import { Card } from '@/components/ui/shadcn/card'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
 import { supabase } from '@/lib/supabaseClient'
 
 const MonitorPage: React.FC = () => {
@@ -88,13 +89,11 @@ const MonitorPage: React.FC = () => {
       <SearchBar func={val => { setSearch(val); setPage(1); }} placeholder="搜尋用戶名稱或 Email..." />
       <CustomScrollbar className="flex-1 overflow-y-auto space-y-4">
         {loading ? (
-          <div className="w-full space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {[...Array(10)].map((_, i) => (
-              <div key={i} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 h-[400px]" />
+              <Skeleton key={i} className=" w-full h-[400px] rounded-xl" />
             ))}
           </div>
-        ) : error ? (
-          <div className="text-destructive">{error}</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {sessions.map((session: Session) => (
