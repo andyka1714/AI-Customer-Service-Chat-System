@@ -14,7 +14,7 @@ export const sidebarRoutes: SidebarRoute[] = [
     title: '智能客服',
     url: '/chat',
     icon: MessageSquareMore,
-    roles: ['user', 'admin'],
+    roles: ['user'],
   },
   {
     title: '對話管理',
