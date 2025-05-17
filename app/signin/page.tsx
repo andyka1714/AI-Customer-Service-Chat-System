@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/shadcn/input"
+import { Button } from '@/components/ui/shadcn/button'
 import { validateLogin } from "@/validators/ui/signin"
 import { useAppDispatch } from '@/redux/store'
 import { signinUser } from '@/redux/userSlice'

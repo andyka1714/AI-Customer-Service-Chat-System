@@ -2,13 +2,14 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/shadcn/card'
+import { Input } from '@/components/ui/shadcn/input'
+import { Button } from '@/components/ui/shadcn/button'
 import { useSelector } from 'react-redux'
 import CustomScrollbar from '@/components/ui/CustomScrollbar'
 import { extractMatchedKeywords } from '@/lib/extractMatchedKeywords'
 import type { ChatMessage } from '@/types/chat'
+import ChatMessages from '@/components/ui/ChatMessages'
 
 export default function ChatPage() {
   // 聊天訊息狀態
@@ -217,27 +218,7 @@ export default function ChatPage() {
               <span className="text-base">請輸入訊息並送出</span>
             </div>
           )}
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className="flex flex-col items-end max-w-[75%]">
-                <div
-                  className={`relative rounded-2xl px-4 py-2 break-words text-base shadow-md transition-all
-                    ${msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-br-md'
-                      : 'text-foreground rounded-bl-md border border-border'}
-                  `}
-                >
-                  {msg.content}
-                </div>
-                {msg.role === 'assistant' && (
-                  <span className="text-xs text-muted-foreground mt-1 ml-2">已回覆</span>
-                )}
-              </div>
-            </div>
-          ))}
+          <ChatMessages messages={messages} />
           {isReplying && (
             <div className="flex justify-start">
               <div className="relative rounded-2xl px-4 py-2 max-w-[75%] text-foreground animate-pulse border border-border rounded-bl-md">

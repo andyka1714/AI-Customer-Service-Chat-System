@@ -2,9 +2,9 @@
 'use client'
 
 import * as React from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/shadcn/button'
 import { PanelRight } from "lucide-react"
-import { useSidebar } from "@/components/ui/sidebar"
+import { useSidebar } from "@/components/ui/shadcn/sidebar"
 
 export function Header() {
   const { toggleSidebar } = useSidebar()

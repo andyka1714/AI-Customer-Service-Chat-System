@@ -21,7 +21,7 @@ const MonitorPage: React.FC = () => {
   return (
     <div className="flex flex-col items-stretch w-full h-full p-6">
       <h1 className="text-2xl font-bold mb-6 self-center">客戶對話監控管理</h1>
-      <CustomScrollbar className="flex-1 overflow-y-auto p-4 space-y-4">
+      <CustomScrollbar className="flex-1 overflow-y-auto space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
           {sessionIds.map((id) => (
             <ChatMessageWindow key={id} sessionId={id} />

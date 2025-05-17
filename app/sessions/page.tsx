@@ -3,8 +3,8 @@
 // 客服對話 sessions 管理頁
 
 import { useEffect, useState, useRef } from 'react'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/shadcn/skeleton'
+import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/shadcn/table'
 import { useSelector } from 'react-redux'
 import { fetchSessions } from '@/redux/sessionsSlice'
 import { useAppDispatch } from '@/redux/store'
