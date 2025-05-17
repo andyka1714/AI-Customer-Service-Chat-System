@@ -10,6 +10,7 @@ import SearchBar from '@/components/ui/SearchBar'
 import CustomPaginationProps from '@/components/ui/CustomPaginationProps'
 import type { Session } from '@/types/sessions'
 import { Card } from '@/components/ui/shadcn/card'
+import { supabase } from '@/lib/supabaseClient'
 
 const MonitorPage: React.FC = () => {
   // 取得 sessions 狀態
@@ -40,6 +41,24 @@ const MonitorPage: React.FC = () => {
   useEffect(() => {
     dispatch(fetchActiveCount())
   }, [dispatch])
+
+  // 監聽 sessions 新增，及時刷新列表
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:sessions')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'sessions' },
+        () => {
+          // 新增 session 時自動刷新
+          dispatch(fetchSessions({ search, page, pageSize }))
+        }
+      )
+      .subscribe()
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [dispatch, search, page, pageSize])
 
   return (
     <div className="flex flex-col items-stretch w-full h-full p-6">
