@@ -21,13 +21,10 @@ export const signinUser = createAsyncThunk(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include', // 確保 cookie 能帶回前端
       })
       const data = await res.json()
       if (res.ok && data.success) {
-        // 將 token 存到 localStorage
-        if (typeof window !== 'undefined' && data.user?.token) {
-          localStorage.setItem('user_token', data.user.token)
-        }
         return data.user
       } else {
         return rejectWithValue(data.errors)

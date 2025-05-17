@@ -1,7 +1,10 @@
 import { Monitor, MessageSquareMore, LogOut, ChevronUp } from "lucide-react"
 import { useSelector, useDispatch } from 'react-redux'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { signoutUser } from '@/redux/userSlice'
+import Link from 'next/link'
+import { sidebarRoutes } from '@/lib/routes'
+import { useSidebarRoutes } from '@/hooks/useSidebarRoutes'
 
 import {
   Sidebar,
@@ -22,25 +25,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-// Menu items.
-const items = [
-  {
-    title: "Chat",
-    url: "#",
-    icon: MessageSquareMore,
-  },
-  {
-    title: "Monitor",
-    url: "#",
-    icon: Monitor,
-  },
-]
-
 export function AppSidebar() {
-  // 取得 redux user name，型別斷言 state 為 RootState
-  const userName = useSelector((state: any) => (state.user?.user?.name ? state.user.user.name : '使用者'))
+  // 取得 redux user name 與 role
+  const user = useSelector((state: any) => state.user?.user)
+  const userName = user?.name || '使用者'
+  const userRole = user?.role
   const dispatch = useDispatch()
   const router = useRouter()
+  const pathname = usePathname()
+
+  // 取得可顯示的 sidebar routes
+  const filteredRoutes = useSidebarRoutes()
 
   // 登出處理
   const handleLogout = async () => {
@@ -52,16 +47,16 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-base font-bold">TransBiz 智能客服系統</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
+              {filteredRoutes.map((item) => (
+                <SidebarMenuItem key={item.title} data-active={pathname === item.url}>
+                  <SidebarMenuButton asChild data-active={pathname === item.url}>
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
