@@ -2,11 +2,11 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useSelector } from 'react-redux'
-import type { RootState } from '@/lib/store'
+import CustomScrollbar from '@/components/ui/CustomScrollbar'
 
 // 訊息型別定義
 interface ChatMessage {
@@ -28,6 +28,9 @@ export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   // 取得目前用戶資訊（假設已登入，從 redux 取得 user）
   const user = useSelector((state: any) => state.user?.user)
+  // 捲軸顯示控制狀態
+  const [showScrollbar, setShowScrollbar] = useState(true)
+  const hideTimer = useRef<NodeJS.Timeout | null>(null)
 
   // 取得歷史訊息（依 sessionId）
   useEffect(() => {
@@ -76,25 +79,43 @@ export default function ChatPage() {
     if (!input.trim() || !sessionId || !user) return
     setInput('')
     setIsReplying(true)
+    // 新增使用者訊息
     await supabase.from('messages').insert([
       { content: input.trim(), role: 'user', session_id: sessionId, user_id: user.id }
     ])
     // 更新 session 最後訊息時間
     await supabase.from('sessions').update({ lastest_message_sended_at: new Date().toISOString() }).eq('id', sessionId)
-    // 模擬 AI 回覆
-    setTimeout(async () => {
+    // 呼叫 OpenAI API 取得 AI 回覆
+    try {
+      // 取得目前 session 所有訊息，組成對話上下文
+      const { data: allMessages } = await supabase
+        .from('messages')
+        .select('role,content')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true })
+      // 組成 OpenAI 格式
+      const chatHistory = (allMessages || []).map((m: any) => ({ role: m.role, content: m.content }))
+      // 呼叫 OpenAI
+      const { fetchOpenAIChat } = await import('@/lib/openai')
+      const aiReply = await fetchOpenAIChat(chatHistory)
+      // 寫入 AI 回覆訊息，user_id 改為當前登入 user 的 id
       await supabase.from('messages').insert([
-        { content: '這是 AI 的回覆內容', role: 'assistant', session_id: sessionId, user_id: user.id }
+        { content: aiReply, role: 'assistant', session_id: sessionId, user_id: user.id }
       ])
-      setIsReplying(false)
-      await supabase.from('sessions').update({ lastest_message_sended_at: new Date().toISOString() }).eq('id', sessionId)
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, 1000)
+    } catch (err) {
+      // 若失敗則顯示錯誤訊息
+      await supabase.from('messages').insert([
+        { content: 'AI 回覆失敗，請稍後再試。', role: 'assistant', session_id: sessionId, user_id: 'ai' }
+      ])
+    }
+    setIsReplying(false)
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // 按下 Enter 送出
+  // 按下 Ctrl+Enter 或 Cmd+Enter 才送出，避免中文輸入法誤送
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // macOS 使用 metaKey (Command)，Windows/Linux 使用 ctrlKey
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault()
       handleSend()
     }
@@ -132,12 +153,36 @@ export default function ChatPage() {
   }, [user, sessionId])
   console.log('messages', messages);
 
+  // 每次訊息或 AI 回覆狀態變動時，自動捲動到底部
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isReplying])
+
+  // 捲軸顯示/隱藏控制
+  useEffect(() => {
+    const content = document.querySelector('.custom-scrollbar')
+    if (!content) return
+    // 滾動時顯示捲軸，1 秒後自動隱藏
+    const handleScroll = () => {
+      setShowScrollbar(true)
+      if (hideTimer.current) clearTimeout(hideTimer.current)
+      hideTimer.current = setTimeout(() => setShowScrollbar(false), 1000)
+    }
+    content.addEventListener('scroll', handleScroll)
+    // 初始 1 秒後隱藏
+    hideTimer.current = setTimeout(() => setShowScrollbar(false), 1000)
+    return () => {
+      content.removeEventListener('scroll', handleScroll)
+      if (hideTimer.current) clearTimeout(hideTimer.current)
+    }
+  }, [sessionId])
+
   return (
     <div className="flex items-center justify-center h-full w-full">
       <Card
         className="p-0 w-full max-w-[600px] h-full flex flex-col justify-between border-none bg-white/80 backdrop-blur-md overflow-hidden rounded-none shadow-none"
       >
-        <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent">
+        <CustomScrollbar className="flex-1 overflow-y-auto p-4 space-y-4">
           {(messages.length === 0 && !isReplying) && (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground select-none pt-24 m-0">
               <span className="font-bold text-2xl mb-1">開始對話吧！</span>
@@ -173,7 +218,7 @@ export default function ChatPage() {
             </div>
           )}
           <div ref={messagesEndRef} />
-        </CardContent>
+        </CustomScrollbar>
         <form
           className="flex items-center gap-2 px-6 py-4 bg-white/90 backdrop-blur-md border border-border rounded-xl m-4"
           onSubmit={(e) => {

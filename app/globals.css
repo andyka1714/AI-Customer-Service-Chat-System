@@ -120,3 +120,31 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 自訂聊天區塊捲軸樣式 */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb #ffffff;
+  transition: scrollbar-color 0.3s;
+}
+.custom-scrollbar.hide-scrollbar {
+  scrollbar-color: transparent transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+  transition: background 0.3s;
+}
+.custom-scrollbar.hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 2px solid transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 8px;
+  border: 2px solid #fff;
+  transition: background 0.3s, border 0.3s;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
