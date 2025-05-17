@@ -218,7 +218,7 @@ export default function ChatPage() {
               <span className="text-base">請輸入訊息並送出</span>
             </div>
           )}
-          <ChatMessages messages={messages} />
+          <ChatMessages messages={messages} showAssistantStatus />
           {isReplying && (
             <div className="flex justify-start">
               <div className="relative rounded-2xl px-4 py-2 max-w-[75%] text-foreground animate-pulse border border-border rounded-bl-md">

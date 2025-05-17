@@ -28,7 +28,7 @@ const MonitorPage: React.FC = () => {
         {loading ? (
           <div className="w-full space-y-2">
             {[...Array(10)].map((_, i) => (
-              <div key={i} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 min-h-[300px]" />
+              <div key={i} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 h-[400px]" />
             ))}
           </div>
         ) : error ? (

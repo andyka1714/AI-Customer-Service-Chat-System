@@ -5,9 +5,10 @@ import type { ChatMessage } from '@/types/chat'
 
 interface ChatMessagesProps {
   messages: ChatMessage[]
+  showAssistantStatus?: boolean // 是否顯示 assistant 狀態，預設 false
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages }) => (
+const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, showAssistantStatus = false }) => (
   <>
     {messages.map((msg) => (
       <div
@@ -24,7 +25,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages }) => (
           >
             {msg.content}
           </div>
-          {msg.role === 'assistant' && (
+          {showAssistantStatus && msg.role === 'assistant' && (
             <span className="text-xs text-muted-foreground mt-1 ml-2">已回覆</span>
           )}
         </div>
