@@ -14,7 +14,7 @@ export async function fetchOpenAIChat(messages: { role: 'user' | 'assistant', co
         // 系統提示詞，要求 AI 回覆簡短
         {
           role: 'system',
-          content: '請用繁體中文回答，內容盡量簡短，維持在 50 字內，若內容較複雜則不超過 100 字。',
+          content: '請用繁體中文回答，內容盡量簡短，維持在 50 字內，若內容較複雜則不超過 100 字。你只能回覆電商相關的問題，其他主題請直接婉拒且不提供回答。請以客服的角色回覆，語氣需柔和且專業。',
         },
         ...messages.map(m => ({ role: m.role, content: m.content })),
       ],
