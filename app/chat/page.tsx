@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useSelector } from 'react-redux'
 import CustomScrollbar from '@/components/ui/CustomScrollbar'
+import { extractMatchedKeywords } from '@/lib/extractMatchedKeywords'
 
 // 訊息型別定義
 interface ChatMessage {
@@ -28,9 +29,6 @@ export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   // 取得目前用戶資訊（假設已登入，從 redux 取得 user）
   const user = useSelector((state: any) => state.user?.user)
-  // 捲軸顯示控制狀態
-  const [showScrollbar, setShowScrollbar] = useState(true)
-  const hideTimer = useRef<NodeJS.Timeout | null>(null)
 
   // 取得歷史訊息（依 sessionId）
   useEffect(() => {
@@ -79,10 +77,42 @@ export default function ChatPage() {
     if (!input.trim() || !sessionId || !user) return
     setInput('')
     setIsReplying(true)
-    // 新增使用者訊息
-    await supabase.from('messages').insert([
-      { content: input.trim(), role: 'user', session_id: sessionId, user_id: user.id }
-    ])
+    // 新增使用者訊息，需取得 message id
+    const { data: inserted, error } = await supabase
+      .from('messages')
+      .insert([
+        { content: input.trim(), role: 'user', session_id: sessionId, user_id: user.id }
+      ])
+      .select('id')
+      .single()
+    if (error || !inserted) {
+      setIsReplying(false)
+      return
+    }
+    const messageId = inserted.id
+    // 僅比對實際出現的關鍵字
+    const matchedKeywords = extractMatchedKeywords(input.trim())
+    if (matchedKeywords.length > 0) {
+      // 查詢目前 session 已有的 keywords
+      const { data: existedKeywords } = await supabase
+        .from('message_keywords')
+        .select('keyword')
+        .eq('session_id', sessionId)
+      const existedSet = new Set((existedKeywords || []).map((k: any) => k.keyword))
+      // 過濾只插入 session 尚未出現過的 keyword
+      const toInsert = matchedKeywords.filter(kw => !existedSet.has(kw))
+      if (toInsert.length > 0) {
+        const now = new Date().toISOString()
+        await supabase.from('message_keywords').insert(
+          toInsert.map((kw) => ({
+            session_id: sessionId,
+            message_id: messageId,
+            keyword: kw,
+            created_at: now
+          }))
+        )
+      }
+    }
     // 更新 session 最後訊息時間
     await supabase.from('sessions').update({ lastest_message_sended_at: new Date().toISOString() }).eq('id', sessionId)
     // 呼叫 OpenAI API 取得 AI 回覆
@@ -98,10 +128,34 @@ export default function ChatPage() {
       // 呼叫 OpenAI
       const { fetchOpenAIChat } = await import('@/lib/openai')
       const aiReply = await fetchOpenAIChat(chatHistory)
-      // 寫入 AI 回覆訊息，user_id 改為當前登入 user 的 id
-      await supabase.from('messages').insert([
+      // 寫入 AI 回覆訊息，取得 id
+      const { data: aiInserted } = await supabase.from('messages').insert([
         { content: aiReply, role: 'assistant', session_id: sessionId, user_id: user.id }
-      ])
+      ]).select('id').single()
+      // 比對 AI 回覆關鍵字並寫入 message_keywords（同樣僅存實際出現的）
+      if (aiInserted) {
+        const aiMatched = extractMatchedKeywords(aiReply)
+        if (aiMatched.length > 0) {
+          // 查詢目前 session 已有的 keywords（再次查詢，確保最新）
+          const { data: existedKeywords2 } = await supabase
+            .from('message_keywords')
+            .select('keyword')
+            .eq('session_id', sessionId)
+          const existedSet2 = new Set((existedKeywords2 || []).map((k: any) => k.keyword))
+          const toInsert2 = aiMatched.filter(kw => !existedSet2.has(kw))
+          if (toInsert2.length > 0) {
+            const now = new Date().toISOString()
+            await supabase.from('message_keywords').insert(
+              toInsert2.map((kw) => ({
+                session_id: sessionId,
+                message_id: aiInserted.id,
+                keyword: kw,
+                created_at: now
+              }))
+            )
+          }
+        }
+      }
     } catch (err) {
       // 若失敗則顯示錯誤訊息
       await supabase.from('messages').insert([
@@ -151,31 +205,11 @@ export default function ChatPage() {
     getOrCreateSession()
     return () => { isMounted = false }
   }, [user, sessionId])
-  console.log('messages', messages);
 
   // 每次訊息或 AI 回覆狀態變動時，自動捲動到底部
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isReplying])
-
-  // 捲軸顯示/隱藏控制
-  useEffect(() => {
-    const content = document.querySelector('.custom-scrollbar')
-    if (!content) return
-    // 滾動時顯示捲軸，1 秒後自動隱藏
-    const handleScroll = () => {
-      setShowScrollbar(true)
-      if (hideTimer.current) clearTimeout(hideTimer.current)
-      hideTimer.current = setTimeout(() => setShowScrollbar(false), 1000)
-    }
-    content.addEventListener('scroll', handleScroll)
-    // 初始 1 秒後隱藏
-    hideTimer.current = setTimeout(() => setShowScrollbar(false), 1000)
-    return () => {
-      content.removeEventListener('scroll', handleScroll)
-      if (hideTimer.current) clearTimeout(hideTimer.current)
-    }
-  }, [sessionId])
 
   return (
     <div className="flex items-center justify-center h-full w-full">
