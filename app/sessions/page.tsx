@@ -2,49 +2,30 @@
 // app/sessions/page.tsx
 // 客服對話 sessions 管理頁
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect } from 'react'
 import { Skeleton } from '@/components/ui/shadcn/skeleton'
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/shadcn/table'
 import { useSelector } from 'react-redux'
 import { fetchSessions } from '@/redux/sessionsSlice'
 import { useAppDispatch } from '@/redux/store'
 import type { Session } from '@/types/sessions'
+import SearchBar from '@/components/ui/SearchBar'
 
 export default function SessionsPage() {
   const sessions = useSelector((state: any) => state.sessions.sessions)
   const loading = useSelector((state: any) => state.sessions.loading)
   const error = useSelector((state: any) => state.sessions.error)
   const dispatch = useAppDispatch()
-  const [search, setSearch] = useState('')
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     dispatch(fetchSessions())
   }, [dispatch])
 
-  // 處理 search bar 輸入，1 秒 debounce
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearch(value)
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      dispatch(fetchSessions(value))
-    }, 1000)
-  }
-
   return (
     <div className="flex flex-col items-stretch w-full h-full p-6">
       <h1 className="text-2xl font-bold mb-6 self-center">客戶對話管理列表</h1>
       {/* 搜尋欄位 */}
-      <div className="w-full flex justify-end mb-4">
-        <input
-          type="text"
-          value={search}
-          onChange={handleSearchChange}
-          placeholder="搜尋用戶名稱或 Email..."
-          className="border border-input rounded-md px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-      </div>
+      <SearchBar func={value => dispatch(fetchSessions(value))} placeholder="搜尋用戶名稱或 Email..." />
       {loading ? (
         <div className="w-full space-y-2">
           {[...Array(5)].map((_, i) => (
