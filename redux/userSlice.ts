@@ -1,16 +1,7 @@
 // redux/userSlice.ts
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-interface UserState {
-  user: {
-    email: string
-    name: string
-    role: 'user' | 'admin'
-    token?: string
-  } | null
-  loading: boolean
-  errors: { email?: string; password?: string; api?: string }
-}
+import type { UserState, UserInfo } from '@/types/redux/user'
+import type { AccountAuthParams } from '@/types/account'
 
 const initialState: UserState = {
   user: null,
@@ -21,9 +12,10 @@ const initialState: UserState = {
 export const signinUser = createAsyncThunk(
   'user/signinUser',
   async (
-    { email, password }: { email: string; password: string },
+    params: AccountAuthParams,
     { rejectWithValue }
   ) => {
+    const { email, password } = params
     try {
       const res = await fetch('/api/signin', {
         method: 'POST',

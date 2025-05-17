@@ -8,13 +8,7 @@ import { Button } from '@/components/ui/button'
 import { useSelector } from 'react-redux'
 import CustomScrollbar from '@/components/ui/CustomScrollbar'
 import { extractMatchedKeywords } from '@/lib/extractMatchedKeywords'
-
-// 訊息型別定義
-interface ChatMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-}
+import type { ChatMessage } from '@/types/chat'
 
 export default function ChatPage() {
   // 聊天訊息狀態

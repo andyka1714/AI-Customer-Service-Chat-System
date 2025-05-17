@@ -3,15 +3,14 @@ import { validateLoginApi } from '@/validators/api/signin'
 import { checkAccount } from '@/lib/accounts'
 
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { email, password } = body
-  const errors = validateLoginApi({ email, password })
+  const data = await request.json()
+  const errors = validateLoginApi(data)
 
   if (errors.email || errors.password) {
     return NextResponse.json({ success: false, errors }, { status: 400 })
   }
 
-  const user = checkAccount(email, password)
+  const user = checkAccount(data)
   if (user) {
     return NextResponse.json({ success: true, user })
   } else {

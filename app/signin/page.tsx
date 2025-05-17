@@ -9,6 +9,7 @@ import { useAppDispatch } from '@/redux/store'
 import { signinUser } from '@/redux/userSlice'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/redux/store'
+import type { SignInErrors } from '@/types/auth'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -16,7 +17,7 @@ export default function SignInPage() {
   const userState = useSelector((state: RootState) => state.user as any)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [errors, setErrors] = useState<{ email?: string; password?: string; api?: string }>({})
+  const [errors, setErrors] = useState<SignInErrors>({})
 
   // 處理登入送出
   const handleSubmit = (e: React.FormEvent) => {

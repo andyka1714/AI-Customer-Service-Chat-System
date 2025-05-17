@@ -1,12 +1,7 @@
 // components/ui/CustomScrollbar.tsx
 // 自訂可自動隱藏的捲軸元件，支援 children 傳入
-import { useRef, useState, useEffect, ReactNode } from 'react'
-
-interface CustomScrollbarProps {
-  children: ReactNode
-  className?: string
-  style?: React.CSSProperties
-}
+import { useRef, useState, useEffect } from 'react'
+import type { CustomScrollbarProps } from '@/types/scrollbar'
 
 export default function CustomScrollbar({ children, className = '', style }: CustomScrollbarProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
