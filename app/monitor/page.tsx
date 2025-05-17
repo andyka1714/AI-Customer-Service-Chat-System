@@ -42,7 +42,7 @@ const MonitorPage: React.FC = () => {
     dispatch(fetchActiveCount())
   }, [dispatch])
 
-  // 監聽 sessions 新增，及時刷新列表
+  // 監聽 sessions 新增，及時刷新列表與活躍對話數
   useEffect(() => {
     const channel = supabase
       .channel('public:sessions')
@@ -52,6 +52,7 @@ const MonitorPage: React.FC = () => {
         () => {
           // 新增 session 時自動刷新
           dispatch(fetchSessions({ search, page, pageSize }))
+          dispatch(fetchActiveCount())
         }
       )
       .subscribe()
