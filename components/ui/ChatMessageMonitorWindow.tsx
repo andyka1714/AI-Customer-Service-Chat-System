@@ -69,6 +69,15 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
     )
   )
 
+  // 總訊息數量
+  const totalMessages = messages.length
+
+  // 計算符合條件的需注意訊息數量：role 為 user 且 content 包含任一關鍵字
+  const totalAttentionMessages =
+  messages.filter(m =>
+    m.role === 'user' && matchedKeywords.some(keyword => m.content.includes(keyword))
+  ).length
+
   return (
     <div className="border rounded-lg p-4 bg-white shadow h-[400px] flex flex-col">
       <div className="flex items-center justify-between font-bold mb-2">
@@ -97,6 +106,11 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
             />
           )
         })()}
+      </div>
+      {/* 新增：訊息統計區塊 */}
+      <div className="flex gap-2 text-[10px] text-gray-500 mb-1">
+        <span>總訊息數：{totalMessages}</span>
+        <span>需注意訊息數：{totalAttentionMessages}</span>
       </div>
       <div className="flex-1 overflow-y-auto space-y-2">
         {messages.length === 0 ? (
