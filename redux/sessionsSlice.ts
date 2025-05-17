@@ -23,16 +23,33 @@ export const fetchSessions = createAsyncThunk<
   }
 )
 
+// 非同步 thunk：取得活躍對話數（1小時內）
+export const fetchActiveCount = createAsyncThunk<number>(
+  'sessions/fetchActiveCount',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await fetch('/api/sessions/active-count')
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || '取得活躍對話數失敗')
+      return json.activeCount as number
+    } catch (err: any) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
 interface SessionsState {
   sessions: Session[]
   loading: boolean
   error: string | null
+  activeCount: number | null
 }
 
 const initialState: SessionsState = {
   sessions: [],
   loading: false,
   error: null,
+  activeCount: null,
 }
 
 const sessionsSlice = createSlice({
@@ -52,6 +69,12 @@ const sessionsSlice = createSlice({
       .addCase(fetchSessions.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload as string
+      })
+      .addCase(fetchActiveCount.fulfilled, (state, action) => {
+        state.activeCount = action.payload ?? null
+      })
+      .addCase(fetchActiveCount.rejected, (state) => {
+        state.activeCount = null
       })
   },
 })
