@@ -169,9 +169,11 @@ export default function SessionsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{s.latest_message_sent_at ? new Date(s.latest_message_sent_at).toLocaleString('zh-TW') : '-'}</TableCell>
-                    <TableCell className="truncate max-w-[200px] flex items-center gap-2">
-                      {s.notes || <span className="text-gray-400">（無備註）</span>}
-                      <NotebookPen size={16} className="text-gray-600 cursor-pointer ml-1" onClick={() => handleEditNotes(s)} />
+                    <TableCell className="h-16 align-middle">
+                      <div className="h-full flex items-center gap-2">
+                        <span className="max-w-[150px] truncate">{s.notes || "無備註"}</span>
+                        <NotebookPen size={16} className="text-gray-600 cursor-pointer ml-1" onClick={() => handleEditNotes(s)} />
+                      </div>
                     </TableCell>
                     <TableCell>{new Date(s.created_at).toLocaleString('zh-TW')}</TableCell>
                   </TableRow>
