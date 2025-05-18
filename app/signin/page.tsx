@@ -10,6 +10,7 @@ import { signinUser } from '@/redux/userSlice'
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/redux/store'
 import type { SignInErrors } from '@/types/auth'
+import { toast } from 'sonner'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -31,9 +32,12 @@ export default function SignInPage() {
     dispatch(signinUser({ email, password }))
       .unwrap()
       .then(() => {
+        toast.success('登入成功！')
         router.push('/chat')
       })
-      .catch(() => {})
+      .catch(() => {
+        toast.error('登入失敗，請檢查帳號密碼')
+      })
   }
 
   return (
