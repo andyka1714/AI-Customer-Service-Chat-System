@@ -130,11 +130,11 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
               title = isActive ? '一小時內有訊息' : '超過一小時未有訊息'
             }
             // 以 currentColor 實現水波紋動畫顏色跟隨主體
-            const rippleClass =
-              'after:content-[\" \"] after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-current after:opacity-30';
+            // 注意：必須將 bg- 與 text- class 寫死，不能用 template string
+            const isActive = color === 'green-500'
             return (
               <span
-                className={`w-3 h-3 rounded-full inline-block border border-gray-300 relative bg-${color} text-${color} ${rippleClass}`}
+                className={`w-3 h-3 rounded-full inline-block border border-gray-300 relative ${isActive ? 'bg-green-500 text-green-500' : 'bg-red-500 text-red-500'} after:content-[''] after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-current after:opacity-30`}
                 title={title}
               />
             )
