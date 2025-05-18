@@ -25,7 +25,6 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
   const [notes, setNotes] = useState(session.notes || '')
   const [notesLoading, setNotesLoading] = useState(false)
   const [attentionMessagesDialogOpen, setAttentionMessagesDialogOpen] = useState(false)
-  const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const dispatch = useAppDispatch()
 
   // 取得歷史訊息
@@ -69,11 +68,6 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
       supabase.removeChannel(channel)
     }
   }, [session.id])
-
-  // 每次訊息變動時，自動捲動到底部
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
 
   // 計算本 session 所有訊息出現過的關鍵字
   const matchedKeywords = Array.from(
@@ -155,10 +149,7 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
         {messages.length === 0 ? (
           <div className="text-gray-400 text-center">（無訊息）</div>
         ) : (
-          <>
-            <ChatMessages messages={messages} keywords={matchedKeywords} />
-            <div ref={messagesEndRef} />
-          </>
+          <ChatMessages messages={messages} keywords={matchedKeywords} />
         )}
       </div>
       {/* 編輯 Notes Dialog */}

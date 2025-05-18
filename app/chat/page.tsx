@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { Card } from '@/components/ui/shadcn/card'
 import { Input } from '@/components/ui/shadcn/input'
@@ -18,8 +18,6 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   // 是否正在回覆
   const [isReplying, setIsReplying] = useState(false)
-  // 捲動到底部用
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   // 新增聊天室 session 狀態
   const [sessionId, setSessionId] = useState<string | null>(null)
   // 取得目前用戶資訊（假設已登入，從 redux 取得 user）
@@ -158,7 +156,6 @@ export default function ChatPage() {
       ])
     }
     setIsReplying(false)
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   // 按下 Ctrl+Enter 或 Cmd+Enter 才送出，避免中文輸入法誤送
@@ -201,11 +198,6 @@ export default function ChatPage() {
     return () => { isMounted = false }
   }, [user, sessionId])
 
-  // 每次訊息或 AI 回覆狀態變動時，自動捲動到底部
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isReplying])
-
   return (
     <div className="flex items-center justify-center h-full w-full">
       <Card
@@ -226,7 +218,6 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
         </CustomScrollbar>
         <form
           className="flex items-center gap-2 px-6 py-4 bg-white/90 backdrop-blur-md border border-border rounded-xl m-4"
