@@ -18,10 +18,10 @@ export async function GET(req: NextRequest) {
   const pageSize = parseInt(searchParams.get('pageSize') || '10', 10)
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
-  // 查詢 sessions，支援名稱/Email 模糊搜尋
+  // 查詢 sessions，支援名稱/Email 模糊搜尋，並加上 messages_count
   let query = supabase
     .from('sessions')
-    .select('id, user_id, latest_message_sent_at, created_at, notes, users!inner(id, role, name, email)', { count: 'exact' })
+    .select(`id, user_id, latest_message_sent_at, created_at, notes, users!inner(id, role, name, email), messages(count)`, { count: 'exact' })
     .order('latest_message_sent_at', { ascending: false, nullsFirst: false })
     .range(from, to)
   if (search) {
@@ -35,10 +35,11 @@ export async function GET(req: NextRequest) {
   // 過濾 admin 後的總數
   const filtered = (sessions || []).filter((s: any) => s.users?.role !== 'admin')
   const result = filtered.map((s: any) => {
-    const { users: user, ...rest } = s
+    const { users: user, messages, ...rest } = s
     return {
       ...rest,
-      user: user ? { id: user.id, name: user.name, email: user.email } : null
+      user: user ? { id: user.id, name: user.name, email: user.email } : null,
+      messages_count: Array.isArray(messages) && messages[0] ? messages[0].count : 0
     }
   })
   return NextResponse.json({ sessions: result, total: count ? filtered.length : 0, page, pageSize })

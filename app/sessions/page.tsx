@@ -91,23 +91,25 @@ export default function SessionsPage() {
           <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-1/5">用戶名稱</TableHead>
-                <TableHead className="w-1/5">Email</TableHead>
-                <TableHead className="w-1/5">最後訊息時間</TableHead>
-                <TableHead className="w-1/5">備註</TableHead>
-                <TableHead className="w-1/5">建立時間</TableHead>
+                <TableHead className="w-1/6">用戶名稱</TableHead>
+                <TableHead className="w-1/6">Email</TableHead>
+                <TableHead className="w-1/6">訊息數量</TableHead> {/* 新增訊息數量欄位 */}
+                <TableHead className="w-1/6">最後訊息時間</TableHead>
+                <TableHead className="w-1/6">備註</TableHead>
+                <TableHead className="w-1/6">建立時間</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sessions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">目前沒有任何 session</TableCell>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">目前沒有任何 session</TableCell>
                 </TableRow>
               ) : (
                 sessions.map((s: Session) => (
                   <TableRow key={s.id}>
                     <TableCell className="font-medium truncate">{s.user?.name || '未知用戶'}</TableCell>
                     <TableCell className="truncate">{s.user?.email || '-'}</TableCell>
+                    <TableCell>{s.messages_count ?? '-'}</TableCell> {/* 顯示訊息數量 */}
                     <TableCell>{s.latest_message_sent_at ? new Date(s.latest_message_sent_at).toLocaleString('zh-TW') : '-'}</TableCell>
                     <TableCell className="truncate max-w-[200px] flex items-center gap-2">
                       {s.notes || <span className="text-gray-400">（無備註）</span>}

@@ -14,4 +14,5 @@ export type Session = {
   created_at: string
   notes?: string | null
   user: SessionUser | null
+  messages_count?: number // 訊息數量
 }
