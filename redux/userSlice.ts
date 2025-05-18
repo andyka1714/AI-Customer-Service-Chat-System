@@ -44,6 +44,19 @@ export const signoutUser = createAsyncThunk('user/signoutUser', async (_, { disp
   }
 })
 
+// 新增：還原 localStorage user 狀態
+export const restoreUserFromStorage = () => (dispatch: any) => {
+  if (typeof window !== 'undefined') {
+    const userStr = localStorage.getItem('mock_user')
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr)
+        dispatch(setUser(user))
+      } catch {}
+    }
+  }
+}
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -65,6 +78,10 @@ const userSlice = createSlice({
         state.loading = false
         state.user = action.payload
         state.errors = {}
+        // 登入成功時將 user 狀態存入 localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('mock_user', JSON.stringify(action.payload))
+        }
       })
       .addCase(signinUser.rejected, (state, action) => {
         state.loading = false
