@@ -38,6 +38,28 @@ export const fetchActiveCount = createAsyncThunk<number>(
   }
 )
 
+// 非同步 thunk：更新 session notes
+export const updateSessionNotes = createAsyncThunk<
+  { sessionId: string; notes: string },
+  { sessionId: string; notes: string }
+>(
+  'sessions/updateSessionNotes',
+  async ({ sessionId, notes }, { rejectWithValue }) => {
+    try {
+      const res = await fetch('/api/sessions/update-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, notes }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.success) throw new Error(json.error || '更新 notes 失敗')
+      return { sessionId, notes }
+    } catch (err: any) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
 interface SessionsState {
   sessions: Session[]
   loading: boolean
@@ -75,6 +97,13 @@ const sessionsSlice = createSlice({
       })
       .addCase(fetchActiveCount.rejected, (state) => {
         state.activeCount = null
+      })
+      .addCase(updateSessionNotes.fulfilled, (state, action) => {
+        // 直接更新對應 session 的 notes
+        const idx = state.sessions.findIndex(s => s.id === action.payload.sessionId)
+        if (idx !== -1) {
+          state.sessions[idx].notes = action.payload.notes
+        }
       })
   },
 })

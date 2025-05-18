@@ -1,11 +1,18 @@
 // components/ui/ChatMessageMonitorWindow.tsx
 // 監控用 Chat message 視窗元件
 import React, { useEffect, useState } from 'react'
+import { List, NotebookPen } from 'lucide-react'
 import type { Session } from '@/types/sessions'
-import { supabase } from '@/lib/supabaseClient'
 import type { ChatMessage } from '@/types/chat'
-import ChatMessages from '@/components/ui/ChatMessages'
+import { supabase } from '@/lib/supabaseClient'
 import { extractMatchedKeywords } from '@/lib/keywords/extractMatchedKeywords'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/shadcn/dialog'
+import ChatMessages from '@/components/ui/ChatMessages'
+import { Button } from '@/components/ui/shadcn/button'
+import { updateSessionNotes } from '@/redux/sessionsSlice'
+import { useAppDispatch } from '@/redux/store'
+import { toast, Toaster } from "sonner"
 
 interface ChatMessageMonitorWindowProps {
   session: Session
@@ -13,7 +20,11 @@ interface ChatMessageMonitorWindowProps {
 
 const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ session }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false)
+  const [notes, setNotes] = useState(session.notes || '')
+  const [notesLoading, setNotesLoading] = useState(false)
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
+  const dispatch = useAppDispatch()
 
   // 取得歷史訊息
   useEffect(() => {
@@ -78,34 +89,54 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
     m.role === 'user' && matchedKeywords.some(keyword => m.content.includes(keyword))
   ).length
 
+  // 儲存 notes 的函式
+  async function handleSaveNotes() {
+    setNotesLoading(true)
+    try {
+      await dispatch(updateSessionNotes({ sessionId: session.id, notes })).unwrap()
+      setNotesDialogOpen(false)
+      // 儲存成功提示
+      toast.success('備註已成功儲存')
+    } catch (err) {
+      // 顯示錯誤提示
+      toast.error('儲存備註時發生錯誤，請稍後再試。')
+    }
+    setNotesLoading(false)
+  }
+
   return (
     <div className="border rounded-lg p-4 bg-white shadow h-[400px] flex flex-col">
       <div className="flex items-center justify-between font-bold mb-2">
-        <span className="truncate max-w-[70%]" title={session.user?.name || session.id}>
+        <span className="truncate w-[calc(100%-70px)]" title={session.user?.name || session.id}>
           {session.user?.name || session.id}
         </span>
-        {/* 狀態燈號 */}
-        {(() => {
-          let color = 'red-500'
-          let title = '尚未有訊息或超過一小時未有訊息'
-          if (session.latest_message_sent_at) {
-            const latest = new Date(session.latest_message_sent_at)
-            const now = new Date()
-            const diffMs = now.getTime() - latest.getTime()
-            const isActive = diffMs <= 60 * 60 * 1000 // 一小時內
-            color = isActive ? 'green-500' : 'red-500'
-            title = isActive ? '一小時內有訊息' : '超過一小時未有訊息'
-          }
-          // 以 currentColor 實現水波紋動畫顏色跟隨主體
-          const rippleClass =
-            'after:content-[" "] after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-current after:opacity-30';
-          return (
-            <span
-              className={`w-3 h-3 rounded-full inline-block border border-gray-300 relative bg-${color} text-${color} ${rippleClass}`}
-              title={title}
-            />
-          )
-        })()}
+        {/* 狀態燈號區塊外層 Wrapper，左側加兩個 Lucide icons */}
+        <div className="flex items-center gap-2 ml-2">
+          <List size={16} className="text-gray-600 cursor-pointer" />
+          <NotebookPen size={16} className="text-gray-600 cursor-pointer" onClick={() => setNotesDialogOpen(true)} />
+          {/* 狀態燈號 */}
+          {(() => {
+            let color = 'red-500'
+            let title = '尚未有訊息或超過一小時未有訊息'
+            if (session.latest_message_sent_at) {
+              const latest = new Date(session.latest_message_sent_at)
+              const now = new Date()
+              const diffMs = now.getTime() - latest.getTime()
+              const isActive = diffMs <= 60 * 60 * 1000 // 一小時內
+              color = isActive ? 'green-500' : 'red-500'
+              title = isActive ? '一小時內有訊息' : '超過一小時未有訊息'
+            }
+            // 以 currentColor 實現水波紋動畫顏色跟隨主體
+            const rippleClass =
+              'after:content-[\" \"] after:absolute after:inset-0 after:rounded-full after:animate-ping after:bg-current after:opacity-30';
+            return (
+              <span
+                className={`w-3 h-3 rounded-full inline-block border border-gray-300 relative bg-${color} text-${color} ${rippleClass}`}
+                title={title}
+              />
+            )
+          })()}
+        </div>
       </div>
       {/* 新增：訊息統計區塊 */}
       <div className="flex gap-2 text-[10px] text-gray-500 mb-1">
@@ -122,6 +153,35 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
           </>
         )}
       </div>
+      {/* 編輯 Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>編輯內部備註</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            value={notes}
+            onChange={(e: any) => setNotes(e.target.value)}
+            rows={6}
+            placeholder="請輸入內部備註..."
+            className="resize-none"
+            disabled={notesLoading}
+          />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="cursor-pointer">取消</Button>
+            </DialogClose>
+            <Button
+              type="button"
+              onClick={handleSaveNotes}
+              disabled={notesLoading || !notes.trim()}
+              className="cursor-pointer"
+            >
+              {notesLoading ? '儲存中...' : '儲存'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
