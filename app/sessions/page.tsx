@@ -14,9 +14,15 @@ import CustomPaginationProps from '@/components/ui/CustomPaginationProps'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/shadcn/dialog'
 import { Button } from '@/components/ui/shadcn/button'
 import { Textarea } from '@/components/ui/shadcn/textarea'
-import { NotebookPen } from 'lucide-react'
+import { NotebookPen, List } from 'lucide-react'
 import { toast } from 'sonner'
 import { updateSessionNotes } from '@/redux/sessionsSlice'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/shadcn/tooltip'
+import { supabase } from '@/lib/supabaseClient'
+import CustomScrollbar from '@/components/ui/CustomScrollbar'
+import type { ChatMessage } from '@/types/chat'
+import { highlightKeywords } from '@/lib/keywords/highlightKeywords'
+import { extractMatchedKeywords } from '@/lib/keywords/extractMatchedKeywords'
 
 export default function SessionsPage() {
   const sessions = useSelector((state: any) => state.sessions.sessions)
@@ -35,6 +41,12 @@ export default function SessionsPage() {
   const [editSessionId, setEditSessionId] = useState<string | null>(null)
   const [editNotes, setEditNotes] = useState('')
   const [editLoading, setEditLoading] = useState(false)
+
+  // 需注意訊息 Dialog 狀態
+  const [attentionDialogOpen, setAttentionDialogOpen] = useState(false)
+  const [attentionSessionId, setAttentionSessionId] = useState<string | null>(null)
+  const [attentionMessages, setAttentionMessages] = useState<ChatMessage[]>([])
+  const [attentionLoading, setAttentionLoading] = useState(false)
 
   // 取得分頁資料
   useEffect(() => {
@@ -73,6 +85,29 @@ export default function SessionsPage() {
     setEditLoading(false)
   }
 
+  // 點擊 icon 開啟 Dialog 並撈取訊息
+  const handleOpenAttentionDialog = async (sessionId: string) => {
+    setAttentionSessionId(sessionId)
+    setAttentionDialogOpen(true)
+    setAttentionLoading(true)
+    // 取得該 session 的所有 user 訊息
+    const { data } = await supabase
+      .from('messages')
+      .select('id, role, content, created_at')
+      .eq('session_id', sessionId)
+      .eq('role', 'user')
+      .order('created_at', { ascending: true })
+    if (!data) {
+      setAttentionMessages([])
+      setAttentionLoading(false)
+      return
+    }
+    // 篩選出需注意訊息
+    const filtered = data.filter((m: any) => extractMatchedKeywords(m.content).length > 0)
+    setAttentionMessages(filtered)
+    setAttentionLoading(false)
+  }
+
   return (
     <div className="flex flex-col items-stretch w-full h-full p-6">
       <h1 className="text-2xl font-bold mb-6 self-center">客戶對話管理列表</h1>
@@ -91,25 +126,48 @@ export default function SessionsPage() {
           <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-1/6">用戶名稱</TableHead>
-                <TableHead className="w-1/6">Email</TableHead>
-                <TableHead className="w-1/6">訊息數量</TableHead> {/* 新增訊息數量欄位 */}
-                <TableHead className="w-1/6">最後訊息時間</TableHead>
-                <TableHead className="w-1/6">備註</TableHead>
-                <TableHead className="w-1/6">建立時間</TableHead>
+                <TableHead className="w-1/7">用戶名稱</TableHead>
+                <TableHead className="w-1/7">Email</TableHead>
+                <TableHead className="w-1/7">訊息數量</TableHead>
+                <TableHead className="w-1/7">需注意訊息數量</TableHead>
+                <TableHead className="w-1/7">最後訊息時間</TableHead>
+                <TableHead className="w-1/7">備註</TableHead>
+                <TableHead className="w-1/7">建立時間</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sessions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">目前沒有任何 session</TableCell>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">目前沒有任何 session</TableCell>
                 </TableRow>
               ) : (
                 sessions.map((s: Session) => (
                   <TableRow key={s.id}>
                     <TableCell className="font-medium truncate">{s.user?.name || '未知用戶'}</TableCell>
                     <TableCell className="truncate">{s.user?.email || '-'}</TableCell>
-                    <TableCell>{s.messages_count ?? '-'}</TableCell> {/* 顯示訊息數量 */}
+                    <TableCell>{s.messages_count ?? '-'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {s.attention_count ?? 0}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                aria-label="查看需注意訊息"
+                                className="cursor-pointer ml-1"
+                                onClick={() => handleOpenAttentionDialog(s.id)}
+                              >
+                                <List size={16} className="text-gray-600" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>查看需注意訊息</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
                     <TableCell>{s.latest_message_sent_at ? new Date(s.latest_message_sent_at).toLocaleString('zh-TW') : '-'}</TableCell>
                     <TableCell className="truncate max-w-[200px] flex items-center gap-2">
                       {s.notes || <span className="text-gray-400">（無備註）</span>}
@@ -149,6 +207,41 @@ export default function SessionsPage() {
                 >
                   {editLoading ? '儲存中...' : '儲存'}
                 </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          {/* 需注意訊息 Dialog */}
+          <Dialog open={attentionDialogOpen} onOpenChange={setAttentionDialogOpen}>
+            <DialogContent className="max-h-[90vh] h-[600px] overflow-y-auto flex flex-col">
+              <DialogHeader>
+                <DialogTitle>
+                  需注意的訊息
+                  <span className="ml-2 text-xs text-gray-500 font-normal">({attentionMessages.length})</span>
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 min-h-0">
+                {attentionLoading ? (
+                  <div className="text-center text-gray-400 py-4">載入中...</div>
+                ) : attentionMessages.length === 0 ? (
+                  <div className="text-gray-400 text-center py-4">（無需注意訊息）</div>
+                ) : (
+                  // 需注意訊息 Dialog 內容
+                  <CustomScrollbar className="h-full flex flex-col gap-2 py-2 overflow-auto px-2">
+                    {attentionMessages.map((m) => {
+                      const matchedKeywords = extractMatchedKeywords(m.content)
+                      return (
+                        <div key={m.id} className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-base text-gray-700 shadow-sm max-w-full">
+                          {highlightKeywords(m.content, matchedKeywords)}
+                        </div>
+                      )
+                    })}
+                  </CustomScrollbar>
+                )}
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" className="cursor-pointer">關閉</Button>
+                </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>

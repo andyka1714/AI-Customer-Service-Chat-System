@@ -11,7 +11,7 @@ export function highlightKeywords(text: string, keywords: string[] = []) {
   const parts = text.split(regex)
   return parts.map((part, i) =>
     keywords.some(k => k && part.toLowerCase() === k.toLowerCase())
-      ? <span key={i} className="bg-yellow-200 text-yellow-900 font-bold px-1 rounded">{part}</span>
+      ? <span key={i} className="bg-yellow-200 text-gray-700 font-bold px-1 rounded">{part}</span>
       : part
   )
 }

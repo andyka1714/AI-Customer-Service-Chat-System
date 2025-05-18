@@ -15,4 +15,5 @@ export type Session = {
   notes?: string | null
   user: SessionUser | null
   messages_count?: number // 訊息數量
+  attention_count?: number // 需注意訊息數量
 }

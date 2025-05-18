@@ -5,6 +5,7 @@ import { List, NotebookPen } from 'lucide-react'
 import type { Session } from '@/types/sessions'
 import type { ChatMessage } from '@/types/chat'
 import { supabase } from '@/lib/supabaseClient'
+import { highlightKeywords } from '@/lib/keywords/highlightKeywords'
 import { extractMatchedKeywords } from '@/lib/keywords/extractMatchedKeywords'
 import { Textarea } from '@/components/ui/shadcn/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/shadcn/dialog'
@@ -195,14 +196,13 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
                   <div className="text-gray-400 text-center py-4">（無需注意訊息）</div>
               ) : (
                 <CustomScrollbar className="h-full flex flex-col gap-2 py-2 overflow-auto px-2">
-                  {attentionMessages.map((m) => (
-                    <div key={m.id} className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-base text-gray-700 shadow-sm max-w-full">
-                      <span dangerouslySetInnerHTML={{
-                        __html: matchedKeywords.reduce((acc, keyword) =>
-                          acc.split(keyword).join(`<span class='bg-yellow-200 font-bold'>${keyword}</span>`), m.content)
-                      }} />
-                    </div>
-                  ))}
+                  {attentionMessages.map((m) => {
+                    return (
+                      <div key={m.id} className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-base text-gray-700 shadow-sm max-w-full">
+                        {highlightKeywords(m.content, matchedKeywords)}
+                      </div>
+                    )
+                  })}
                 </CustomScrollbar>
               )}
           </div>
