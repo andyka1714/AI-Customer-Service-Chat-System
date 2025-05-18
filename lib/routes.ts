@@ -17,15 +17,15 @@ export const sidebarRoutes: SidebarRoute[] = [
     roles: ['user'],
   },
   {
-    title: '對話管理',
-    url: '/sessions',
-    icon: ListChecks,
-    roles: ['admin'],
-  },
-  {
     title: '對話監控',
     url: '/monitor',
     icon: Monitor,
+    roles: ['admin'],
+  },
+  {
+    title: '對話管理',
+    url: '/sessions',
+    icon: ListChecks,
     roles: ['admin'],
   },
 ]
