@@ -1,6 +1,6 @@
 // components/ui/ChatMessageMonitorWindow.tsx
 // 監控用 Chat message 視窗元件
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { List, NotebookPen } from 'lucide-react'
 import type { Session } from '@/types/sessions'
 import type { ChatMessage } from '@/types/chat'
@@ -12,7 +12,8 @@ import ChatMessages from '@/components/ui/ChatMessages'
 import { Button } from '@/components/ui/shadcn/button'
 import { updateSessionNotes } from '@/redux/sessionsSlice'
 import { useAppDispatch } from '@/redux/store'
-import { toast, Toaster } from "sonner"
+import { toast } from "sonner"
+import CustomScrollbar from '@/components/ui/CustomScrollbar'
 
 interface ChatMessageMonitorWindowProps {
   session: Session
@@ -23,6 +24,7 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [notes, setNotes] = useState(session.notes || '')
   const [notesLoading, setNotesLoading] = useState(false)
+  const [attentionMessagesDialogOpen, setAttentionMessagesDialogOpen] = useState(false)
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const dispatch = useAppDispatch()
 
@@ -80,6 +82,12 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
     )
   )
 
+  // 取得需注意訊息（role 為 user 且包含關鍵字）
+  const attentionMessages = useMemo(() =>
+    messages.filter(m =>
+      m.role === 'user' && matchedKeywords.some(keyword => m.content.includes(keyword))
+    ), [messages, matchedKeywords])
+
   // 總訊息數量
   const totalMessages = messages.length
 
@@ -112,7 +120,7 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
         </span>
         {/* 狀態燈號區塊外層 Wrapper，左側加兩個 Lucide icons */}
         <div className="flex items-center gap-2 ml-2">
-          <List size={16} className="text-gray-600 cursor-pointer" />
+          <List size={16} className="text-gray-600 cursor-pointer" onClick={() => setAttentionMessagesDialogOpen(true)} />
           <NotebookPen size={16} className="text-gray-600 cursor-pointer" onClick={() => setNotesDialogOpen(true)} />
           {/* 狀態燈號 */}
           {(() => {
@@ -179,6 +187,38 @@ const ChatMessageMonitorWindow: React.FC<ChatMessageMonitorWindowProps> = ({ ses
             >
               {notesLoading ? '儲存中...' : '儲存'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* 關鍵字列表 Dialog */}
+      <Dialog open={attentionMessagesDialogOpen} onOpenChange={setAttentionMessagesDialogOpen}>
+        <DialogContent className="max-h-[90vh] h-[600px] overflow-y-auto flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              需注意的訊息
+              <span className="ml-2 text-xs text-gray-500 font-normal">({attentionMessages.length})</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0">
+              {attentionMessages.length === 0 ? (
+                  <div className="text-gray-400 text-center py-4">（無需注意訊息）</div>
+              ) : (
+                <CustomScrollbar className="h-full flex flex-col gap-2 py-2 overflow-auto px-2">
+                  {attentionMessages.map((m) => (
+                    <div key={m.id} className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-base text-gray-700 shadow-sm max-w-full">
+                      <span dangerouslySetInnerHTML={{
+                        __html: matchedKeywords.reduce((acc, keyword) =>
+                          acc.split(keyword).join(`<span class='bg-yellow-200 font-bold'>${keyword}</span>`), m.content)
+                      }} />
+                    </div>
+                  ))}
+                </CustomScrollbar>
+              )}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="cursor-pointer">關閉</Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
