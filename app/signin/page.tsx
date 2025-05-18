@@ -32,8 +32,15 @@ export default function SignInPage() {
     dispatch(signinUser({ email, password }))
       .unwrap()
       .then(() => {
-        toast.success('登入成功！')
-        router.push('/chat')
+        // 根據 user role 導向不同頁面
+        const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('mock_user') || '{}') : null
+        if (user?.role === 'admin') {
+          toast.success('登入成功！')
+          router.push('/monitor')
+        } else {
+          toast.success('登入成功！')
+          router.push('/chat')
+        }
       })
       .catch(() => {
         toast.error('登入失敗，請檢查帳號密碼')
