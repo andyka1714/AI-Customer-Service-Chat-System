@@ -11,6 +11,12 @@ import { useAppDispatch } from '@/redux/store'
 import type { Session } from '@/types/sessions'
 import SearchBar from '@/components/ui/SearchBar'
 import CustomPaginationProps from '@/components/ui/CustomPaginationProps'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/shadcn/dialog'
+import { Button } from '@/components/ui/shadcn/button'
+import { Textarea } from '@/components/ui/shadcn/textarea'
+import { NotebookPen } from 'lucide-react'
+import { toast } from 'sonner'
+import { updateSessionNotes } from '@/redux/sessionsSlice'
 
 export default function SessionsPage() {
   const sessions = useSelector((state: any) => state.sessions.sessions)
@@ -24,6 +30,12 @@ export default function SessionsPage() {
   const pageSize = 10
   const [search, setSearch] = useState('')
 
+  // 編輯備註 Dialog 狀態
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editSessionId, setEditSessionId] = useState<string | null>(null)
+  const [editNotes, setEditNotes] = useState('')
+  const [editLoading, setEditLoading] = useState(false)
+
   // 取得分頁資料
   useEffect(() => {
     dispatch(fetchSessions({ search, page, pageSize }))
@@ -34,6 +46,32 @@ export default function SessionsPage() {
         }
       })
   }, [dispatch, search, page])
+
+  // 開啟編輯 Dialog
+  const handleEditNotes = (session: Session) => {
+    setEditSessionId(session.id)
+    setEditNotes(session.notes || '')
+    setEditDialogOpen(true)
+  }
+  // 關閉 Dialog
+  const handleCloseDialog = () => {
+    setEditDialogOpen(false)
+    setEditSessionId(null)
+    setEditNotes('')
+  }
+  // 儲存備註（呼叫 redux thunk）
+  const handleSaveNotes = async () => {
+    if (!editSessionId) return
+    setEditLoading(true)
+    try {
+      await dispatch(updateSessionNotes({ sessionId: editSessionId, notes: editNotes })).unwrap()
+      setEditDialogOpen(false)
+      toast.success('備註已成功儲存')
+    } catch (err) {
+      toast.error('儲存備註時發生錯誤，請稍後再試。')
+    }
+    setEditLoading(false)
+  }
 
   return (
     <div className="flex flex-col items-stretch w-full h-full p-6">
@@ -53,16 +91,17 @@ export default function SessionsPage() {
           <Table className="w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-1/4">用戶名稱</TableHead>
-                <TableHead className="w-1/4">Email</TableHead>
-                <TableHead className="w-1/4">最後訊息時間</TableHead>
-                <TableHead className="w-1/4">建立時間</TableHead>
+                <TableHead className="w-1/5">用戶名稱</TableHead>
+                <TableHead className="w-1/5">Email</TableHead>
+                <TableHead className="w-1/5">最後訊息時間</TableHead>
+                <TableHead className="w-1/5">備註</TableHead>
+                <TableHead className="w-1/5">建立時間</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sessions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">目前沒有任何 session</TableCell>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">目前沒有任何 session</TableCell>
                 </TableRow>
               ) : (
                 sessions.map((s: Session) => (
@@ -70,6 +109,10 @@ export default function SessionsPage() {
                     <TableCell className="font-medium truncate">{s.user?.name || '未知用戶'}</TableCell>
                     <TableCell className="truncate">{s.user?.email || '-'}</TableCell>
                     <TableCell>{s.latest_message_sent_at ? new Date(s.latest_message_sent_at).toLocaleString('zh-TW') : '-'}</TableCell>
+                    <TableCell className="truncate max-w-[200px] flex items-center gap-2">
+                      {s.notes || <span className="text-gray-400">（無備註）</span>}
+                      <NotebookPen size={16} className="text-gray-600 cursor-pointer ml-1" onClick={() => handleEditNotes(s)} />
+                    </TableCell>
                     <TableCell>{new Date(s.created_at).toLocaleString('zh-TW')}</TableCell>
                   </TableRow>
                 ))
@@ -78,6 +121,35 @@ export default function SessionsPage() {
           </Table>
           {/* 分頁元件 */}
           <CustomPaginationProps page={page} total={total} pageSize={pageSize} setPage={setPage} />
+          {/* 編輯備註 Dialog */}
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>編輯內部備註</DialogTitle>
+              </DialogHeader>
+              <Textarea
+                value={editNotes}
+                onChange={e => setEditNotes(e.target.value)}
+                rows={6}
+                placeholder="請輸入內部備註..."
+                className="resize-none"
+                disabled={editLoading}
+              />
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" className="cursor-pointer">取消</Button>
+                </DialogClose>
+                <Button
+                  type="button"
+                  onClick={handleSaveNotes}
+                  disabled={editLoading || !editNotes.trim()}
+                  className="cursor-pointer"
+                >
+                  {editLoading ? '儲存中...' : '儲存'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>

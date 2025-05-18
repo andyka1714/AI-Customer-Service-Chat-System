@@ -10,7 +10,6 @@ import SearchBar from '@/components/ui/SearchBar'
 import CustomPaginationProps from '@/components/ui/CustomPaginationProps'
 import type { Session } from '@/types/sessions'
 import { Card } from '@/components/ui/shadcn/card'
-import { Skeleton } from '@/components/ui/shadcn/skeleton'
 import { supabase } from '@/lib/supabaseClient'
 
 const MonitorPage: React.FC = () => {
