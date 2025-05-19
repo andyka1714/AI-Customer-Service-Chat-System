@@ -9,9 +9,10 @@ interface ChatMessagesProps {
   messages: ChatMessage[]
   showAssistantStatus?: boolean // 是否顯示 assistant 狀態，預設 false
   keywords?: string[] // 要 highlight 的關鍵字
+  isReplying?: boolean // AI 是否正在輸入，預設 false
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, showAssistantStatus = false, keywords = [] }) => {
+const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, showAssistantStatus = false, keywords = [], isReplying = false }) => {
   // 取得 CustomScrollbar 控制 handle
   const scrollbarRef = useRef<CustomScrollbarHandle>(null)
 
@@ -44,6 +45,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, showAssistantStat
           </div>
         </div>
       ))}
+      {/* AI 正在輸入狀態 */}
+      {showAssistantStatus && isReplying && (
+        <div className="flex justify-start">
+          <div className="relative rounded-2xl px-4 py-2 max-w-[75%] text-foreground animate-pulse border border-border rounded-bl-md">
+            正在輸入...
+          </div>
+        </div>
+      )}
     </CustomScrollbar>
   )
 }

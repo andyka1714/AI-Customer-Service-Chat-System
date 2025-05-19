@@ -210,14 +210,7 @@ export default function ChatPage() {
               <span className="text-base">請輸入訊息並送出</span>
             </div>
           )}
-          <ChatMessages messages={messages} showAssistantStatus />
-          {isReplying && (
-            <div className="flex justify-start">
-              <div className="relative rounded-2xl px-4 py-2 max-w-[75%] text-foreground animate-pulse border border-border rounded-bl-md">
-                正在輸入...
-              </div>
-            </div>
-          )}
+          <ChatMessages messages={messages} showAssistantStatus isReplying={isReplying} />
         </CustomScrollbar>
         <form
           className="flex items-center gap-2 px-6 py-4 bg-white/90 backdrop-blur-md border border-border rounded-xl m-4"
