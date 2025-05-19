@@ -1,9 +1,8 @@
-import { Monitor, MessageSquareMore, LogOut, ChevronUp } from "lucide-react"
+import { LogOut, ChevronUp } from "lucide-react"
 import { useSelector, useDispatch } from 'react-redux'
 import { useRouter, usePathname } from 'next/navigation'
 import { signoutUser } from '@/redux/userSlice'
 import Link from 'next/link'
-import { sidebarRoutes } from '@/lib/routes'
 import { useSidebarRoutes } from '@/hooks/useSidebarRoutes'
 
 import {
@@ -29,7 +28,6 @@ export function AppSidebar() {
   // 取得 redux user name 與 role
   const user = useSelector((state: any) => state.user?.user)
   const userName = user?.name || '使用者'
-  const userRole = user?.role
   const dispatch = useDispatch()
   const router = useRouter()
   const pathname = usePathname()
